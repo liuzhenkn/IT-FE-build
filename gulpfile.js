@@ -9,10 +9,11 @@
 // gulp.dest(path[, options]) 处理完后文件生成路径
  
 var gulp = require('gulp');
-var less = require('gulp-less');
-var htmlMin = require('gulp-htmlmin');
+var babel = require("gulp-babel");
+var browserSync = require('browser-sync').create();
 var imageMin = require('gulp-imagemin');
-var connect = require('gulp-connect');
+var htmlMin = require('gulp-htmlmin');
+var less = require('gulp-less');
 var uglify = require('gulp-uglify');
 
 var htmlSrc = 'src/*.html';
@@ -20,18 +21,19 @@ var jsSrc = 'src/js/*.js';
 var styleSrc = 'src/style/*.less'; // 本地 style 文件路径
 var imgSrc = 'src/img/*.{png,jpg,gif,ico}';
 
-gulp.task('jsUglify', function () {
+gulp.task('js', function () {
     gulp.src(jsSrc)
+        .pipe(babel()) // es6 => es5
         .pipe(uglify())
         .pipe(gulp.dest('dist/js'))
-        .pipe(connect.reload());
+        .pipe(browserSync.stream());
 });
 
 gulp.task('less', function () {
    gulp.src(styleSrc)
        .pipe(less())
        .pipe(gulp.dest('dist/style'))
-       .pipe(connect.reload());
+       .pipe(browserSync.stream());
 });
 
 gulp.task('htmlMin', function () {
@@ -49,27 +51,24 @@ gulp.task('htmlMin', function () {
     gulp.src('src/*.html')
         .pipe(htmlMin(options))
         .pipe(gulp.dest('dist'))
-        .pipe(connect.reload());
+        .pipe(browserSync.stream());
 });
 
 gulp.task('imageMin', function () {
     gulp.src(imgSrc)
         .pipe(imageMin())
         .pipe(gulp.dest('dist/img'))
-        .pipe(connect.reload());
+        .pipe(browserSync.stream());
 });
 
-gulp.task('watch', function() {
+gulp.task('server', ['js', 'less', 'htmlMin', 'imageMin'], function() {
+    browserSync.init({
+        server: "./dist"
+    });
+
     gulp.watch(htmlSrc, ['htmlMin']);
-    gulp.watch(jsSrc, ['jsUglify']);
+    gulp.watch(jsSrc, ['js']);
     gulp.watch(styleSrc, ['less']);
 });
 
-gulp.task('connect',function(){
-    connect.server({
-        root: './dist',
-        livereload: true
-    })
-});
-
-gulp.task('default',['jsUglify', 'less', 'htmlMin', 'connect', 'watch']); // 默认调用的任务列表
+gulp.task('default',['server']); // 默认调用的任务列表
