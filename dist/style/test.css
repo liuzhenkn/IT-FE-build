@@ -10,11 +10,14 @@ body {
 }
 .test-wrapper .test-hot-load {
   margin: 20px 0;
-  border: 2px solid crimson;
+  border: 2px solid lightgreen;
   border-radius: 5px;
 }
 .test-wrapper #testJsHotLoad {
   margin: 20px 0;
   border: 2px solid dodgerblue;
   border-radius: 5px;
+}
+.test-wrapper img {
+  width: 100px;
 }

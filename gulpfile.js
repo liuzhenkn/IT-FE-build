@@ -8,20 +8,32 @@
 // gulp.src(globs[, options]) 执行任务处理的文件  globs：处理的文件路径(字符串或者字符串数组)
 // gulp.dest(path[, options]) 处理完后文件生成路径
  
-var gulp = require('gulp');
-var babel = require("gulp-babel");
-var browserSync = require('browser-sync').create();
-var imageMin = require('gulp-imagemin');
-var htmlMin = require('gulp-htmlmin');
-var less = require('gulp-less');
-var uglify = require('gulp-uglify');
+const gulp = require('gulp');
+const babel = require("gulp-babel");
+const browserSync = require('browser-sync').create();
+const imageMin = require('gulp-imagemin');
+const htmlMin = require('gulp-htmlmin');
+const less = require('gulp-less');
+const uglify = require('gulp-uglify');
 
-var htmlSrc = 'src/*.html';
-var jsSrc = 'src/js/*.js';
-var styleSrc = 'src/style/*.less'; // 本地 style 文件路径
-var imgSrc = 'src/img/*.{png,jpg,gif,ico}';
+const htmlSrc = 'src/*.html';
+const jsSrc = 'src/js/*.js';
+const styleSrc = 'src/style/*.less'; // 本地 style 文件路径
+const imgSrc = 'src/img/*.{png,jpg,jpeg,gif,ico}';
+const commonSrc = 'src/common/*.{html,css,js}';
 
-gulp.task('js', function () {
+gulp.task('commonMove', () => {
+    gulp.src(commonSrc)
+        .pipe(gulp.dest('dist/common'));
+});
+
+gulp.task('cssMove', () => {
+    gulp.src('src/style/*.css')
+        .pipe(gulp.dest('dist/style'))
+        .pipe(browserSync.stream());
+});
+
+gulp.task('js', () => {
     gulp.src(jsSrc)
         .pipe(babel()) // es6 => es5
         .pipe(uglify())
@@ -29,15 +41,15 @@ gulp.task('js', function () {
         .pipe(browserSync.stream());
 });
 
-gulp.task('less', function () {
+gulp.task('less', () => {
    gulp.src(styleSrc)
        .pipe(less())
        .pipe(gulp.dest('dist/style'))
        .pipe(browserSync.stream());
 });
 
-gulp.task('htmlMin', function () {
-    var options = {
+gulp.task('htmlMin', () => {
+    const options = {
         removeComments: true, // 清除HTML注释
         collapseWhitespace: false, // 压缩HTML
         collapseBooleanAttributes: true, // 省略布尔属性的值 <input checked="true"/> ==> <input />
@@ -61,7 +73,7 @@ gulp.task('imageMin', function () {
         .pipe(browserSync.stream());
 });
 
-gulp.task('server', ['js', 'less', 'htmlMin', 'imageMin'], function() {
+gulp.task('server', ['js', 'less', 'htmlMin', 'imageMin', 'commonMove', 'cssMove'], () => {
     browserSync.init({
         server: "./dist"
     });
@@ -69,6 +81,8 @@ gulp.task('server', ['js', 'less', 'htmlMin', 'imageMin'], function() {
     gulp.watch(htmlSrc, ['htmlMin']);
     gulp.watch(jsSrc, ['js']);
     gulp.watch(styleSrc, ['less']);
+    gulp.watch(imgSrc, ['imageMin']);
+    gulp.watch('src/style/*.css', ['cssMove']);
 });
 
 gulp.task('default',['server']); // 默认调用的任务列表

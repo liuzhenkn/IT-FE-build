@@ -5,7 +5,7 @@
  */
  
 window.onload = function () {
-    const testJs = document.getElementById('testJsHotLoad');
+    const $testJs = $('#testJsHotLoad');
     let a = 'test babel';
-    testJs.innerText = `测试 js 热更新 + ${a}`;
+    $testJs.html(`测试 js 热更新 + ${a}`);
 };
